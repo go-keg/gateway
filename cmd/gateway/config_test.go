@@ -74,7 +74,7 @@ func equalTo() *configv1.Gateway {
 				},
 			},
 			{
-				Path:     "/helloworld.Greeter/*",
+				Path:     "/helloworld.v1.Greeter/*",
 				Method:   "POST",
 				Protocol: configv1.Protocol_GRPC,
 				Timeout:  &durationpb.Duration{Seconds: 1},
@@ -95,12 +95,25 @@ func equalTo() *configv1.Gateway {
 					},
 				},
 			},
+			{
+				Path:     "/ws",
+				Timeout:  &durationpb.Duration{Seconds: 10},
+				Protocol: configv1.Protocol_HTTP,
+				Backends: []*configv1.Backend{
+					{
+						Target: "127.0.0.1:18080",
+					},
+				},
+				Stream: true,
+			},
 		},
 		Middlewares: []*configv1.Middleware{
 			{
 				Name: "tracing",
 				Options: asAny(&tracingv1.Tracing{
-					HttpEndpoint: "localhost:4318",
+					Endpoint: &tracingv1.Tracing_HttpEndpoint{
+						HttpEndpoint: "localhost:4318",
+					},
 				}),
 			},
 			{
@@ -116,6 +129,9 @@ func equalTo() *configv1.Gateway {
 					AllowOrigins:     []string{".google.com"},
 					AllowMethods:     []string{"GET", "POST", "OPTIONS"},
 				}),
+			},
+			{
+				Name: "streamrecorder",
 			},
 		},
 	}
